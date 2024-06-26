@@ -1,57 +1,89 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
-import { Input, Form, message } from "antd";
+import React, { useEffect, useState, useMemo } from "react";
+import { Input, Form, message, Select, Button } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
-import { InputRef } from "antd/lib/input";
 import data from "../data/vehicle_data - Copy.json";
-import { setVehicles, filterVehicles } from "../redux/vehicleSlice";
+import { setVehicles } from "../redux/vehicleSlice";
+
+const { Option } = Select;
 
 export const Navbar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const vehicles = useSelector(
-    (state: RootState) => state.vehicles.vehicleData
-  );
-  const inputValue = useRef<InputRef | null>(null);
+  const vehicles = useSelector((state: RootState) => state.vehicles.vehicleData);
+  const [searchValue, setSearchValue] = useState('');
+  const [brandFilter, setBrandFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
   const [noResults, setNoResults] = useState(false);
 
-  const handleSubmit = () => {
-    if (inputValue.current) {
-      const searchValue = inputValue.current.input?.value;
-      if (searchValue) {
-        const filteredVehicles = data.filter((vehicle) =>
-          vehicle.Name.toLowerCase().includes(searchValue.toLowerCase())
-        );
-        if (filteredVehicles.length === 0) {
-          setNoResults(true);
-          message.info("No matching vehicles found of this name, please look for a name from the below data");
-          dispatch(setVehicles(data));
-        } else {
-          setNoResults(false);
-          dispatch(filterVehicles(searchValue));
-        }
-      } else {
-        setNoResults(false);
-        dispatch(setVehicles(data));
-      }
+  const brands = useMemo(() => Array.from(new Set(data.map(vehicle => vehicle.Manufacturer))), []);
+  const types = useMemo(() => Array.from(new Set(data.map(vehicle => vehicle.Type))), []);
+
+  const handleFilter = () => {
+    const filteredVehicles = data.filter(vehicle => 
+      vehicle.Name.toLowerCase().includes(searchValue.toLowerCase()) &&
+      (!brandFilter || vehicle.Manufacturer.toLowerCase() === brandFilter.toLowerCase()) &&
+      (!typeFilter || vehicle.Type.toLowerCase() === typeFilter.toLowerCase())
+    );
+
+    if (filteredVehicles.length === 0) {
+      setNoResults(true);
+      message.info("No matching vehicles found. Please adjust your search criteria.");
+    } else {
+      setNoResults(false);
+      dispatch(setVehicles(filteredVehicles));
     }
   };
+
+  const handleClear = () => {
+    setSearchValue('');
+    setBrandFilter('');
+    setTypeFilter('');
+    dispatch(setVehicles(data));
+    setNoResults(false);
+  };
+
+  useEffect(() => {
+    handleFilter();
+  }, [searchValue, brandFilter, typeFilter]);
 
   useEffect(() => {
     dispatch(setVehicles(data));
   }, [dispatch]);
 
   return (
-    <Form style={{ display: "flex", justifyContent: 'center', marginTop:10 }} onFinish={handleSubmit} className="w-full">
-      <Form.Item label="Search" name="search">
+    <Form style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 10 }} className="w-full">
+      <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
         <Input
-          ref={inputValue}
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
           placeholder="Search"
-          style={{ maxWidth: 600 }}
-          className="mb-4 w-[50%] mx-auto"
-          onChange={() => setNoResults(false)}
+          style={{ width: 200 }}
         />
-      </Form.Item>
+        <Select
+          value={brandFilter}
+          onChange={setBrandFilter}
+          style={{ width: 150 }}
+          placeholder="Brand"
+        >
+          <Option value="">All Brands</Option>
+          {brands.map(brand => (
+            <Option key={brand} value={brand}>{brand}</Option>
+          ))}
+        </Select>
+        <Select
+          value={typeFilter}
+          onChange={setTypeFilter}
+          style={{ width: 150 }}
+          placeholder="Type"
+        >
+          <Option value="">All Types</Option>
+          {types.map(type => (
+            <Option key={type} value={type}>{type}</Option>
+          ))}
+        </Select>
+        <Button onClick={handleClear}>Clear Filters</Button>
+      </div>
     </Form>
   );
 };
