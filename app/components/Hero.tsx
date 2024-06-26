@@ -42,7 +42,15 @@ export const Hero: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center' , height:'100vh'}} className="flex justify-center items-center h-[100vh]">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+        className="flex justify-center items-center h-[100vh]"
+      >
         <Spin size="large" tip="Loading vehicles..." />
       </div>
     );
