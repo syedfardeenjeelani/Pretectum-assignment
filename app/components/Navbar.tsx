@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
-import { Input, Form, message, Select, Button, Row, Col } from "antd";
+import { Input, Form, message, Select, Button } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
 import data from "../data/vehicle_data - Copy.json";
@@ -14,6 +14,7 @@ export const Navbar: React.FC = () => {
   const [searchValue, setSearchValue] = useState('');
   const [brandFilter, setBrandFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [sortBy, setSortBy] = useState('');
   const [noResults, setNoResults] = useState(false);
 
   const brands = useMemo(() => Array.from(new Set(data.map(vehicle => vehicle.Manufacturer))), []);
@@ -31,7 +32,12 @@ export const Navbar: React.FC = () => {
       message.info("No matching vehicles found. Please adjust your search criteria.");
     } else {
       setNoResults(false);
-      dispatch(setVehicles(filteredVehicles));
+      const sortedVehicles = [...filteredVehicles].sort((a, b) => 
+        sortBy === 'name' ? a.Name.localeCompare(b.Name) :
+        sortBy === 'date' ? new Date(a["Manufacturing Date"]).getTime() - new Date(b["Manufacturing Date"]).getTime() :
+        0
+      );
+      dispatch(setVehicles(sortedVehicles));
     }
   };
 
@@ -39,58 +45,62 @@ export const Navbar: React.FC = () => {
     setSearchValue('');
     setBrandFilter('');
     setTypeFilter('');
+    setSortBy('');
     dispatch(setVehicles(data));
     setNoResults(false);
   };
 
   useEffect(() => {
     handleFilter();
-  }, [searchValue, brandFilter, typeFilter]);
+  }, [searchValue, brandFilter, typeFilter, sortBy]);
 
   useEffect(() => {
     dispatch(setVehicles(data));
   }, [dispatch]);
 
   return (
-    <Form className="w-95% max-w-[95%] mx-auto p-4">
-      <Row gutter={[16, 16]} justify="center">
-        <Col  sm={12} md={6} lg={5}>
-          <Input
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="Search"
-          />
-        </Col>
-        <Col  sm={12} md={6} lg={5}>
-          <Select
-            value={brandFilter}
-            onChange={setBrandFilter}
-            style={{ width: '95%' }}
-            placeholder="Brand"
-          >
-            <Option value="">All Brands</Option>
-            {brands.map(brand => (
-              <Option key={brand} value={brand}>{brand}</Option>
-            ))}
-          </Select>
-        </Col>
-        <Col sm={12} md={6} lg={5}>
-          <Select
-            value={typeFilter}
-            onChange={setTypeFilter}
-            style={{ width: '95%' }}
-            placeholder="Type"
-          >
-            <Option value="">All Types</Option>
-            {types.map(type => (
-              <Option key={type} value={type}>{type}</Option>
-            ))}
-          </Select>
-        </Col>
-        <Col sm={12} md={6} lg={5}>
-          <Button onClick={handleClear} style={{ width: '95%' }}>Clear Filters</Button>
-        </Col>
-      </Row>
+    <Form className="w-full flex flex-col items-center mt-2">
+      <div className="w-full flex flex-wrap gap-2 justify-center mb-2">
+        <Input
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          placeholder="Search here"
+          className="w-full  sm:w-48"
+        />
+        <Select
+          value={brandFilter}
+          onChange={setBrandFilter}
+          className="w-full sm:w-36"
+          placeholder="Brand"
+        >
+          <Option value="">All Brands</Option>
+          {brands.map(brand => (
+            <Option key={brand} value={brand}>{brand}</Option>
+          ))}
+        </Select>
+        <Select
+          value={typeFilter}
+          onChange={setTypeFilter}
+          className="w-full sm:w-36"
+          placeholder="Type"
+        >
+          <Option value="">All Types</Option>
+          {types.map(type => (
+            <Option key={type} value={type}>{type}</Option>
+          ))}
+        </Select>
+        <Select
+          value={sortBy}
+          onChange={setSortBy}
+          className="w-full sm:w-36"
+          placeholder="Sort By"
+        >
+          <Option value="">No Sorting</Option>
+          <Option value="name">Name</Option>
+          <Option value="date">Manufacturing Date</Option>
+        </Select>
+        <Button className="w-full sm:w-auto" onClick={handleClear}>Clear Filters</Button>
+      </div>
     </Form>
   );
 };
