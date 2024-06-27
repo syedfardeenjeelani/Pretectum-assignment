@@ -7,7 +7,9 @@ import { RootState } from "../redux/store";
 const { Text } = Typography;
 
 export const Hero: React.FC = () => {
-  const vehicles = useSelector((state: RootState) => state.vehicles.vehicleData);
+  const vehicles = useSelector(
+    (state: RootState) => state.vehicles.vehicleData
+  );
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -20,7 +22,7 @@ export const Hero: React.FC = () => {
       title: "Manufacturing Date",
       dataIndex: "Manufacturing Date",
       key: "Manufacturing Date",
-      render: (date: string) => new Date(date).toLocaleDateString()
+      render: (date: string) => new Date(date).toLocaleDateString(),
     },
     { title: "Seating", dataIndex: "Seating", key: "Seating" },
   ];
@@ -56,28 +58,32 @@ export const Hero: React.FC = () => {
     );
   }
 
-  
-
   return (
-    <div style={{marginLeft:10, marginRight:10}}>
+    <div style={{ marginLeft: 10, marginRight: 10 }}>
       {isMobile ? (
         <List
           grid={{ gutter: 16, column: 1 }}
           dataSource={vehicles}
           pagination={{ pageSize: 5 }}
           renderItem={(item) => (
-            <List.Item  key={item.Name}>
+            <List.Item key={item.Name}>
               <Card title={item.Name} className="w-full">
                 <Tooltip title="Model">
-                  <Text><Text strong>Model:</Text> {item.Model}</Text>
+                  <Text>
+                    <Text strong>Model:</Text> {item.Model}
+                  </Text>
                 </Tooltip>
                 <br />
                 <Tooltip title="Type">
-                  <Text><Text strong>Type:</Text> {item.Type}</Text>
+                  <Text>
+                    <Text strong>Type:</Text> {item.Type}
+                  </Text>
                 </Tooltip>
                 <br />
                 <Tooltip title="Manufacturer">
-                  <Text><Text strong>Manufacturer:</Text> {item.Manufacturer}</Text>
+                  <Text>
+                    <Text strong>Manufacturer:</Text> {item.Manufacturer}
+                  </Text>
                 </Tooltip>
                 <br />
                 <Tooltip title="Manufacturing Date">
@@ -88,7 +94,9 @@ export const Hero: React.FC = () => {
                 </Tooltip>
                 <br />
                 <Tooltip title="Seating">
-                  <Text><Text strong>Seating:</Text> {item.Seating}</Text>
+                  <Text>
+                    <Text strong>Seating:</Text> {item.Seating}
+                  </Text>
                 </Tooltip>
               </Card>
             </List.Item>
@@ -98,19 +106,16 @@ export const Hero: React.FC = () => {
         <Table
           dataSource={vehicles}
           columns={columns}
-          pagination={{ 
+          pagination={{
             pageSize: 10,
-            style: { display: 'flex', justifyContent: 'center' }
+            style: { display: "flex", justifyContent: "center" },
           }}
-          
           rowKey={(record) => record.Name}
         />
       )}
     </div>
   );
 };
-
-
 
 
 
